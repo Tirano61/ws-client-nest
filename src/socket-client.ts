@@ -12,6 +12,9 @@ export const connectToServer = () =>{
 const addListeners =( socket: Socket) =>{
     const serverStatusLabel = document.querySelector('#server-status')!;
     const clientsConnected = document.querySelector('#client-ul')!;
+    const mesageForm =  document.querySelector<HTMLFormElement>('#mesage-form')!;
+    const mesageInput = document.querySelector<HTMLInputElement>('#mesage-input')!; 
+    const messagesUl = document.querySelector('#messages-ul')!; 
 
     socket.on('connect', () => {
         serverStatusLabel.innerHTML = 'Connected';
@@ -29,5 +32,32 @@ const addListeners =( socket: Socket) =>{
         })
         clientsConnected.innerHTML = clientHTML;
     });
+
+    mesageForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (mesageInput.value.trim().length <= 0) return;
+
+        socket.emit('message-from-client', {
+            id: 'YO!!',
+            message: mesageInput.value
+        });
+
+        mesageInput.value = '';
+        
+    });
+
+    socket.on('message-from-server', (payload: { fullName: string, message: string }) => {
+        const newMessage = `
+            <li>
+                <strong>${payload.fullName}</strong>
+                <span>${payload.message}</span>
+            </li>
+        `;
+        const li = document.createElement('li');
+        li.innerHTML = newMessage;
+        messagesUl.append(li);
+
+    })
+
 
 }
